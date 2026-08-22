@@ -122,16 +122,23 @@ function createServer(env: Env) {
 }
 
 export default {
-  fetch(request: Request, env: Env, ctx: ExecutionContext) {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
-    
+
+    if (url.pathname === "/health") {
+      return Response.json({
+        ok: true,
+        service: "intervals-mcp",
+      });
+    }
+
     if (url.pathname === "/test-intervals") {
       try {
         const data = await intervalsFetch(
           env,
           "/athlete/0/activities?oldest=2026-08-15&newest=2026-08-22"
         );
-    
+
         return Response.json({
           ok: true,
           activities: Array.isArray(data) ? data.length : "response received"
@@ -147,13 +154,6 @@ export default {
           { status: 500 }
         );
       }
-    }
-    
-    if (url.pathname === "/health") {
-      return Response.json({
-        ok: true,
-        service: "intervals-mcp",
-      });
     }
 
     if (url.pathname === "/mcp") {

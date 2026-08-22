@@ -124,7 +124,31 @@ function createServer(env: Env) {
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
-
+    
+    if (url.pathname === "/test-intervals") {
+      try {
+        const data = await intervalsFetch(
+          env,
+          "/athlete/0/activities?oldest=2026-08-15&newest=2026-08-22"
+        );
+    
+        return Response.json({
+          ok: true,
+          activities: Array.isArray(data) ? data.length : "response received"
+        });
+      } catch (error) {
+        return Response.json(
+          {
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+            apiKeyPresent: !!env.INTERVALS_API_KEY,
+            apiKeyLength: env.INTERVALS_API_KEY?.length ?? 0
+          },
+          { status: 500 }
+        );
+      }
+    }
+    
     if (url.pathname === "/health") {
       return Response.json({
         ok: true,
